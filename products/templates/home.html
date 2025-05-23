@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% load custom_filters %}
+
+{% block title %}cn2bn{% endblock %}
+
+{% block content %}
+
+<div class="container mx-auto p-8 mt-10">
+     <!-- Hero Section -->
+  <section class="relative overflow-hidden bg-cover bg-center min-h-96 flex items-center justify-center"
+  style="background-image: url('https://images.unsplash.com/photo-1603565297974-f1f7b0d9c3e4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');">
+  
+  <!-- Gradient Overlay -->
+  <div class="absolute inset-0 bg-gradient-to-r from-black via-transparent to-black opacity-70"></div>
+
+  <!-- Content -->
+  <div class="relative z-10 text-center text-white px-6 sm:px-8 md:px-12 lg:px-24">
+    <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-4 animate-fade-in">
+      Elevate Your Style
+    </h1>
+    <p class="text-base sm:text-lg md:text-xl lg:text-2xl mb-8 opacity-90 animate-fade-in">
+      Discover the latest trends in fashion and accessories.
+    </p>
+    
+    <!-- Dual Call-to-Action Buttons -->
+    <div class="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in">
+      <a href="{% url 'products_page' %}"
+        class="inline-block bg-rose-600 hover:bg-rose-700 text-white font-semibold py-3 sm:py-4 px-6 sm:px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105">
+        Shop Now
+      </a>
+      <a href="#explore-more"
+        class="inline-block border border-white text-white font-semibold py-3 sm:py-4 px-6 sm:px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:bg-white hover:text-black">
+        Explore More
+      </a>
+    </div>
+  </div>
+
+  <!-- Floating Product Image -->
+  <div class="absolute bottom-4 right-4 w-32 sm:w-48 h-auto animate-float">
+    <img src="https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
+      alt="Floating Product" class="rounded-lg shadow-2xl">
+  </div>
+</section>
+
+   <!-- Products -->
+{% for category, products in products_by_category.items %}
+<div class="container mx-auto px-6 py-12">
+  <!-- Category Title -->
+  <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-8 text-center border py-4 bg-slate-200">{{ category.name }}</h2>
+
+  <!-- Product Grid -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+    {% for product in products %}
+      <a href="{% url 'product_detail' product.id %}" class="block transform transition duration-300 hover:scale-105 hover:shadow-2xl">
+        <div class="bg-white rounded-3xl overflow-hidden shadow-md hover:shadow-lg border border-gray-100">
+          <!-- Product Image -->
+          {% with product.images.first as first_image %}
+            <div class="relative h-48 w-full overflow-hidden">
+              {% if first_image %}
+                <img class="w-full h-full object-cover" src="{{ first_image.image.url }}" alt="{{ product.name }}">
+              {% else %}
+                <img class="w-full h-full object-cover" src="/static/default-image.jpg" alt="No Image">
+              {% endif %}
+            </div>
+          {% endwith %}
+
+          <!-- Product Details -->
+          <div class="p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-2 line-clamp-1">{{ product.name }}</h3>
+            <p class="text-gray-700 text-xl font-semibold mb-2">Brand : {{product.brand}}</p>
+            <p class="text-green-600 text-xl font-bold mb-2">Price: {{ product.price }} BDT</p>
+            
+            <p class="text-sm text-gray-600">
+              Available: 
+              <span class="px-2.5 py-1 rounded-full text-xs font-medium 
+                {% if product.available %}
+                    bg-green-100 text-green-800
+                {% else %}
+                    bg-red-100 text-red-800
+                {% endif %}"
+              >
+                {% if product.available %}In Stock{% else %}Out of Stock{% endif %}
+              </span>
+            </p>
+          </div>
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+</div>
+{% endfor %}
+</div>
+
+{% endblock %}

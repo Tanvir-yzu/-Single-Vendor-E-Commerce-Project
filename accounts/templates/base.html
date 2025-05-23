@@ -1,0 +1,18 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %}</title>
+    <link href="{% static 'css/output.css' %}" rel="stylesheet" />
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+</head>
+<body >
+    <main class="bg-gradient-to-br from-blue-50 to-indigo-100">
+        {% block content %}
+        <!-- Default content or placeholder -->
+        {% endblock %}
+    </main>
+</body>
+</html>

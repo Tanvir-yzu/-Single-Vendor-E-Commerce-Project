@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block title %}{{ product.name }} - Details{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+  <section class="bg-white py-10 mt-14">
+    <div class="container mx-auto px-4">
+      <h1 class="text-4xl font-bold text-center text-gray-900 mb-4">{{ product.name }}</h1>
+      {% if  product.description  %}
+       <p class="text-lg text-center text-gray-700"> {{ product.description|truncatewords:10 }}</p>
+      {% endif %}
+    </div>
+  </section>
+
+  <!-- Product Details Container -->
+  <div class="container mx-auto px-4 py-8">
+    <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+      <!-- Product Image and Details -->
+      <div 
+        class="flex flex-col md:flex-row" 
+        x-data="{ 
+          currentImage: '{{ product.images.first.image.url }}',
+          selectedColor: 'black',
+          selectedSize: 'M'
+        }"
+      >
+        <!-- Product Image Gallery -->
+        <div class="md:w-1/2 p-6">
+          <div class="relative w-full h-96 overflow-hidden rounded-lg">
+            <img 
+              :src="currentImage" 
+              alt="Product Image" 
+              class="w-full h-full object-cover object-center"
+            />
+          </div>
+
+          <!-- Thumbnail Buttons -->
+          <div class="flex space-x-2 mt-4">
+            {% for image in product.images.all %}
+               <button 
+                 @click="currentImage = '{{ image.image.url }}'" 
+                 class="w-20 h-20 border border-gray-200 rounded-lg overflow-hidden hover:border-blue-500 transition">
+                 <img src="{{ image.image.url }}" alt="Product Image" class="w-full h-full object-cover">
+               </button>
+             {% endfor %} 
+          </div>
+        </div>
+
+        <!-- Product Information -->
+        <div class="md:w-1/2 p-6">
+          <h1 class="text-3xl font-bold text-gray-900 mb-4">{{ product.name }}</h1>
+          <p class="text-xl text-gray-700 mb-4">{{ product.price }} <span class="font-thin">BDT</span></p>
+
+          <!-- Color Selection -->
+          <div class="mb-4">
+            <p class="text-sm text-gray-600 font-bold mb-2">Color:</p>
+            <div class="flex space-x-3">
+              {% for color in product.colors.all %}
+                <button 
+                  @click="selectedColor = '{{ color.hex_code }}'" 
+                  :class="selectedColor === '{{ color.hex_code }}' ? 'border-blue-500' : 'border-gray-300'" 
+                  class="w-8 h-8 rounded-full border-2 hover:border-blue-500 transition"
+                  style="background-color: {{ color.hex_code }}"
+                ></button>
+              {% empty %}
+                <p class="text-gray-500">No colors available</p>
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- Product Sizes -->
+          <div class="mb-4">
+            <p class="text-sm text-gray-600 font-bold mb-2">Sizes:</p>
+            <div class="flex space-x-3">
+              {% for size in product.sizes.all %}
+                <button 
+                  @click="selectedSize = '{{ size.name }}'" 
+                  :class="selectedSize === '{{ size.name }}' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'" 
+                  class="px-4 py-2 rounded-md hover:bg-blue-500 hover:text-white transition"
+                >
+                  {{ size.name }}
+                </button>
+              {% empty %}
+                <p>Not applicable</p>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <p class="text-sm text-gray-600 font-bold mb-2">Weight:</p>
+            <p class="text-gray-700">{{ product.weight }} gm</p>
+          </div>
+          <div class="mb-4">
+            <p class="text-sm text-gray-600 font-bold mb-2">Brand:</p>
+            <p class="text-gray-700">{{ product.brand }}</p>
+          </div>
+          <div class="mb-4">
+            <p class="text-sm text-gray-600 font-bold mb-2">Dimensions:</p>
+            {% if product.dimensions %}
+               
+               <td class="class="text-gray-700"">{{ product.dimensions }}</td>
+                </tr>
+            {% endif %}
+          </div>
+          <div class="mb-4">
+            <p class="text-sm text-gray-600 font-bold mb-2">Availability:</p>
+              {% if product.available %}
+                  <span class="text-green-600 font-bold">✅ In Stock</span>
+              {% else %}
+                  <span class="text-red-600 font-bold">❌ Out of Stock</span>
+              {% endif %}
+          </div>
+
+          <!-- Add to Cart Button -->
+          <form method="POST" action="{% url 'add_to_cart' product.id %}">
+            {% csrf_token %}
+            
+            <input type="hidden" name="selected_color" x-model="selectedColor">
+            <input type="hidden" name="selected_size" x-model="selectedSize">
+          
+            {% if product.available %}
+              <button 
+                type="submit"
+                class="w-full bg-blue-500 text-white py-3 rounded-md hover:bg-blue-600 transition">
+                Add to Cart
+              </button>
+            {% else %}
+              <button 
+                type="button"
+                class="w-full bg-red-900 text-white py-3 rounded-md cursor-not-allowed opacity-50" 
+                disabled>
+                Add to Cart
+              </button>
+            {% endif %}
+          </form>
+        </div>
+      </div>
+
+      <!-- Product Description -->
+      <div class="p-6 border-t border-gray-200">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">Description</h2>
+        <p class="text-gray-700 leading-relaxed">
+          {% if  product.description  %}
+            <p class="text-lg  text-gray-700"> {{ product.description}}</p>
+          {% endif %}
+        </p>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}

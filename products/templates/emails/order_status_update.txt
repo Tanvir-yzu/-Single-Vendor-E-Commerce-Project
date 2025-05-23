@@ -1,0 +1,15 @@
+Order Status Update - {{ order.order_ref }}
+
+Dear {{ order.recipient_name }},
+
+We wanted to inform you that your order status has been updated:
+- Order Number: {{ order.order_ref }}
+- New Status: {{ order.order_status }}
+- Order Date: {{ order.order_date|date:"F d, Y" }}
+- Total Amount: ${{ order.total_amount }}
+
+You can view your order details in your dashboard.
+
+Thank you for shopping with us!
+Best regards,
+Your Company Name

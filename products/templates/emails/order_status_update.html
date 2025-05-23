@@ -1,0 +1,57 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8 font-sans">
+    <div class="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">Order Status Update - {{ order.order_ref }}</h2>
+        
+        <p class="text-gray-700 mb-4">Dear {{ order.recipient_name }},</p>
+        
+        <p class="text-gray-700 mb-4">We wanted to inform you that your order status has been updated:</p>
+        
+        <div class="bg-gray-50 p-6 rounded-lg mb-6">
+            <ul class="space-y-3">
+                <li class="flex justify-between">
+                    <span class="text-gray-600">Order Number:</span>
+                    <span class="font-medium text-gray-800">{{ order.order_ref }}</span>
+                </li>
+                <li class="flex justify-between">
+                    <span class="text-gray-600">Order Status:</span>
+                    <span class="font-medium 
+                        {% if order.order_status == 'pending' %}text-yellow-600
+                        {% elif order.order_status == 'processing' %}text-blue-600
+                        {% elif order.order_status == 'shipped' %}text-purple-600
+                        {% elif order.order_status == 'delivered' %}text-green-600
+                        {% elif order.order_status == 'cancelled' %}text-red-600
+                        {% else %}text-gray-600{% endif %}">
+                        {{ order.order_status }}
+                    </span>
+                </li>
+                <li class="flex justify-between">
+                    <span class="text-gray-600">Order Date:</span>
+                    <span class="font-medium text-gray-800">{{ order.order_date|date:"F d, Y" }}</span>
+                </li>
+                <li class="flex justify-between">
+                    <span class="text-gray-600">Total Amount:</span>
+                    <span class="font-medium text-gray-800">৳{{ order.total_amount }}</span>
+                </li>
+            </ul>
+        </div>
+
+        <p class="text-gray-700 mb-4">You can view your order details in your dashboard.</p>
+        
+        <div class="border-t pt-6 mt-6">
+            <p class="text-gray-700 mb-2">Thank you for shopping with us!</p>
+            <p class="text-gray-700">
+                Best regards,<br>
+                <span class="font-medium">FM TRADE</span>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,58 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> {{ user_data.username }}  Dashboard</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.6"></script>
+    <!-- Alpine.js CDN -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body class="bg-gray-100 font-sans min-h-screen">
+    <div x-data="{ openSidebar: false, activeSection: 'dashboard' }" class="flex flex-col md:flex-row min-h-screen">
+        <!-- Sidebar -->
+        <aside class="bg-white shadow-lg transition-all duration-300 ease-in-out fixed md:static inset-y-0 left-0 z-50 w-20 md:w-64"
+               :class="{ 'w-64': openSidebar, 'hidden md:block': !openSidebar }">
+            <div class="p-4 flex items-center justify-between border-b">
+                <h1 :class="{ 'opacity-100': openSidebar || window.innerWidth >= 768, 'opacity-0 hidden': !openSidebar && window.innerWidth < 768 }" 
+                    class="text-xl font-bold text-green-600 transition-opacity duration-300">
+                    <a href="{% url 'home_page' %}">E-Commerce</a>
+                </h1>
+            </div>
+            <nav class="py-4">
+                {% include 'dashboard\leftmanu.html' %}
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-4 md:p-6 overflow-y-auto">
+            <!-- Mobile Menu Toggle -->
+            <div class="md:hidden flex justify-between items-center mb-4">
+                <h1 class="text-xl font-bold text-gray-800"><a href="{% url 'home_page' %}">E-Commerce</a></h1>
+                <button @click="openSidebar = !openSidebar" class="p-2 rounded-full hover:bg-gray-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Dashboard Section -->
+            <div x-show="activeSection === 'dashboard'" class="space-y-6">
+                {% include 'dashboard\dash_Board.html' %}
+            </div>
+            <!-- Track Order Section -->
+            <div x-show="activeSection === 'track'" class="space-y-6">
+                {% include 'dashboard\track_order.html' %}
+            </div>
+            <!-- Order History Section -->
+            <div x-show="activeSection === 'history'" class="space-y-6">
+                <!-- Include the sidebar -->
+                    {% include 'dashboard\order_history.html' %}
+            </div>    
+        </main>
+    </div>
+</body>
+</html>

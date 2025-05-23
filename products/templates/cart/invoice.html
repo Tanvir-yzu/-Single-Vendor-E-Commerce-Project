@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block title %}Product Invoice{% endblock %}
+{% block content %}
+<!-- Invoice -->
+<div class="max-w-4xl mx-auto bg-white shadow-lg rounded-lg mt-16 mb-8 overflow-hidden">
+    <!-- Header Section -->
+    <header class="p-6 border-b border-gray-200">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-800">FM TRADE INTERNATIONAL</h1>
+                <p class="text-sm text-gray-600">Shewrapara, Mirpur, Dhaka-1216</p>
+                <p class="text-sm text-gray-600">01620541999</p>
+            </div>
+            <div class="text-left sm:text-right">
+                <h2 class="text-xl font-bold text-gray-800">INVOICE</h2>
+                <p class="text-sm text-gray-600">#{{ order.order_ref }}</p>
+                <p class="text-sm text-gray-600">Date: {{ order.order_date }}</p>
+                <p class="text-sm text-gray-600">Subtotal: Tk. {{ order.total_amount }}</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Billing Details -->
+    <section class="p-6 border-b border-gray-200">
+        <h3 class="text-lg font-bold text-gray-800 mb-3">Bill To:</h3>
+        <div class="text-sm text-gray-600 space-y-1">
+            <p>{{ order.recipient_name }}</p>
+            <p>{{ order.shipping_address }}</p>
+            <p>{{ order.phone_number }}</p>
+            <p>{{ order.email }}</p>
+        </div>
+    </section>
+
+    <!-- Invoice Items -->
+    <section class="p-6 border-b border-gray-200">
+        <table class="w-full text-sm text-gray-600">
+            <thead>
+                <tr class="text-left border-b border-gray-200">
+                    <th class="py-3 font-bold text-gray-800">Items</th>
+                    <th class="py-3 font-bold text-gray-800">Qty</th>
+                    <th class="py-3 font-bold text-gray-800">Unit Cost</th>
+                    <th class="py-3 font-bold text-gray-800 text-right">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in order_items %}
+                    <tr class="border-b border-gray-100">
+                        <td class="py-3">{{ item.product.name }} - pcs</td>
+                        <td class="py-3">{{ item.quantity }}</td>
+                        <td class="py-3">Tk. {{ item.product.price }}</td>
+                        <td class="py-3 text-right">Tk. {{ item.total_price }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+
+    <!-- Totals Section -->
+    <section class="p-6 border-b border-gray-200">
+        <div class="flex justify-end">
+            <div class="grid grid-cols-2 gap-x-8 gap-y-2 text-sm max-w-xs">
+                <p class="text-gray-600">Subtotal</p>
+                <p class="text-right font-bold">Tk. {{ order.total_amount }}</p>
+                <p class="text-gray-600">Paid</p>
+                {% if order.payment_status == "paid" %}
+                    <p class="text-right font-bold">Tk. {{ order.total_amount }}</p>
+                {% else %}
+                    <p class="text-right font-bold">Tk. 0</p>
+                {% endif %}
+                <p class="text-gray-600">Balance Due</p>
+                {% if order.payment_status == "paid" %}
+                    <p class="text-right font-bold">Tk. 0</p>
+                {% else %}
+                    <p class="text-right font-bold text-red-600">Tk. {{ order.total_amount }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Payment Buttons -->
+        <div class="mt-6 flex justify-end">
+            {% if order.payment_status == "pending" or order.payment_status == "failed" %}
+                <div class="flex flex-col sm:flex-row items-center gap-4">
+                    <form action="{% url 'create_payment_session' order_ref=order.order_ref %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow-md transition duration-300">
+                            Pay Now
+                        </button>
+                    </form>
+                    <div class="relative" x-data="{ tooltip: false }">
+                        <a href="#" 
+                           class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg shadow-md transition duration-300"
+                           @mouseover="tooltip = true" @mouseleave="tooltip = false">
+                            Pay Later
+                        </a>
+                        <div x-show="tooltip" 
+                             class="absolute z-10 top-full mt-2 left-0 sm:left-auto sm:right-0 px-3 py-2 text-sm text-white bg-gray-800 rounded shadow-lg whitespace-nowrap transition-opacity duration-300"
+                             x-bind:class="{ 'opacity-100': tooltip, 'opacity-0': !tooltip }">
+                            Find this order in your Order History
+                        </div>
+                    </div>
+                </div>
+            {% elif order.payment_status == "paid" %}
+                <p class="text-green-600 font-bold">Payment Completed</p>
+            {% elif order.payment_status == "failed" %}
+                <p class="text-red-600 font-bold mb-2">Payment Failed. Please try again.</p>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="p-6 text-center">
+        <p class="text-gray-600 mb-2">Thank you for your business!</p>
+        <p class="text-xs text-gray-500">For any questions regarding this invoice, please contact us at support@fmtrade.com</p>
+    </footer>
+</div>
+{% endblock %}

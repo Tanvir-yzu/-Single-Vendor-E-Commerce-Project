@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block title %}Product Store{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header Section -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-extrabold text-gray-900 mb-4">Our Products</h1>
+            <p class="text-lg text-gray-600">Discover our amazing collection</p>
+        </div>
+
+        <!-- Category Filter -->
+        <div class="flex justify-center mb-12">
+            <form method="GET" class="w-full max-w-md">
+                <div class="relative">
+                    <select name="category" 
+                            onchange="this.form.submit()" 
+                            class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 
+                                   focus:border-blue-500 focus:ring-2 focus:ring-blue-200 
+                                   transition duration-200 bg-white text-gray-700 
+                                   cursor-pointer appearance-none">
+                        <option value="">All Categories</option>
+                        {% for category in categories %}
+                            <option value="{{ category.id }}" 
+                                    {% if category.id|stringformat:"s" == category_id %}selected{% endif %}>
+                                {{ category.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                            <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
+                        </svg>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Products Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {% for product in page_obj %}
+                <div class="group relative h-full">
+                    <a href="{% url 'product_detail' product.id %}" 
+                       class="block h-full overflow-hidden rounded-2xl bg-white shadow-lg 
+                              transform transition duration-300 hover:-translate-y-2 hover:shadow-2xl">
+                        {% with product.images.first as first_image %}
+                            <div class="relative h-[250px] overflow-hidden">
+                                {% if first_image %}
+                                    <img class="w-full h-full object-cover transform transition-transform 
+                                              duration-300 group-hover:scale-110" 
+                                         src="{{ first_image.image.url }}" 
+                                         alt="{{ product.name }}">
+                                {% else %}
+                                    <img class="w-full h-full object-cover" 
+                                         src="/static/default-image.jpg" 
+                                         alt="No Image">
+                                {% endif %}
+                            </div>
+                        {% endwith %}
+                        
+                        <div class="p-5">
+                            <h3 class="text-lg font-bold text-gray-900 mb-2 line-clamp-2 min-h-[3.5rem]">
+                                {{ product.name }}
+                            </h3>
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="text-xl font-bold text-blue-600">
+                                    {{ product.price }} BDT
+                                </span>
+                                <span class="px-2.5 py-1 rounded-full text-xs font-medium 
+                                           {% if product.available %}
+                                               bg-green-100 text-green-800
+                                           {% else %}
+                                               bg-red-100 text-red-800
+                                           {% endif %}">
+                                    {% if product.available %}In Stock{% else %}Out of Stock{% endif %}
+                                </span>
+                            </div>
+                            <button class="w-full py-2.5 px-4 bg-blue-600 text-white text-sm font-medium rounded-lg 
+                                         hover:bg-blue-700 transition duration-200 shadow-sm">
+                                View Details
+                            </button>
+                        </div>
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        <div class="mt-12 flex justify-center items-center space-x-2">
+            {% if page_obj.has_previous %}
+                <a href="?{% if category_id %}category={{ category_id }}&{% endif %}page=1" 
+                   class="flex items-center px-4 py-2 text-sm font-medium text-gray-700 
+                          bg-white border border-gray-300 rounded-lg hover:bg-gray-50 shadow-sm">
+                    <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                              d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/>
+                    </svg>
+                    First
+                </a>
+                <a href="?{% if category_id %}category={{ category_id }}&{% endif %}page={{ page_obj.previous_page_number }}" 
+                   class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border 
+                          border-gray-300 rounded-lg hover:bg-gray-50 shadow-sm">
+                    Previous
+                </a>
+            {% endif %}
+
+            <span class="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 
+                         border border-blue-200 rounded-lg shadow-sm">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </span>
+
+            {% if page_obj.has_next %}
+                <a href="?{% if category_id %}category={{ category_id }}&{% endif %}page={{ page_obj.next_page_number }}" 
+                   class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border 
+                          border-gray-300 rounded-lg hover:bg-gray-50 shadow-sm">
+                    Next
+                </a>
+                <a href="?{% if category_id %}category={{ category_id }}&{% endif %}page={{ page_obj.paginator.num_pages }}" 
+                   class="flex items-center px-4 py-2 text-sm font-medium text-gray-700 
+                          bg-white border border-gray-300 rounded-lg hover:bg-gray-50 shadow-sm">
+                    Last
+                    <svg class="w-5 h-5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                              d="M13 5l7 7-7 7M5 5l7 7-7 7"/>
+                    </svg>
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

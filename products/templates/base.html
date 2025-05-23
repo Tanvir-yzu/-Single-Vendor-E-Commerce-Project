@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+{% load static %}
+{% load custom_filters %}
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf_token" content="{{ csrf_token }}">
+    <title>{% block title %}cn2bn{% endblock title %}</title>
+    <link href="{% static 'css/output.css' %}" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://unpkg.com/htmx.org"></script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in { animation: fadeIn 1s ease-in-out; }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+        .animate-float { animation: float 3s ease-in-out infinite; }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans antialiased">
+    <nav x-data="{ isOpen: false, isProfileOpen: false }" class="bg-white shadow-lg fixed top-0 left-0 w-full z-50">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <button @click="isOpen = !isOpen" class="md:hidden rounded-md p-2 text-gray-700 hover:bg-gray-100">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                    <a href="{% url 'home_page' %}" class="ml-4 flex items-center">
+                        <span class="text-xl font-bold text-gray-800">CN2BN</span>
+                    </a>
+                </div>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="{% url 'home_page' %}" class="text-gray-700 hover:text-blue-600 px-3 py-2 font-bold">Home</a>
+                    <a href="{% url 'products_page' %}" class="text-gray-700 hover:text-blue-600 px-3 py-2 font-bold">Shop</a>
+                    <a href="{% url 'about_page' %}" class="text-gray-700 hover:text-blue-600 px-3 py-2 font-bold">About</a>
+                    <a href="{% url 'contact_page' %}" class="text-gray-700 hover:text-blue-600 px-3 py-2 font-bold">Contact</a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="relative flex items-center">
+                        <button id="search-button" class="p-2 text-gray-700 hover:text-blue-600 focus:outline-none">
+                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </button>
+                        <div id="search-input" class="absolute right-0 top-full mt-2 hidden w-72 sm:w-96 max-w-[90vw]">
+                            <form method="GET" class="flex items-center bg-white rounded-lg shadow-lg overflow-hidden">
+                                <input type="text" name="query" placeholder="Search products..." class="px-4 py-3 w-full border-none focus:outline-none text-gray-800 placeholder-gray-500" />
+                                <button type="submit" class="px-6 py-3 bg-blue-500 text-white font-medium hover:bg-blue-600 transition duration-300">Search</button>
+                            </form>
+                        </div>
+                    </div>
+                    <a href="{% url 'cart_detail' %}" class="relative p-2 text-gray-700 hover:text-blue-600">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                        {% if cart_items %}
+                        <span class="absolute top-0 left-1/2 transform -translate-x-1/4 -translate-y-1/4 bg-red-600 text-white text-xs px-2 py-0.5 rounded-full">
+                            {{ cart_items }}
+                        </span>
+                        {% endif %}
+                    </a>
+                    <div class="relative" @mouseenter="isProfileOpen = true" @mouseleave="isProfileOpen = false">
+                        <button class="p-2 text-gray-700 hover:text-blue-600">
+                            {% if user_data.profile_image %}
+                                <img class="w-12 h-12 rounded-full border-2 border-gray-300" src="{{ user_data.profile_image }}" alt="{{ user_data.username }}">
+                            {% else %}
+                                <img class="w-12 h-12 rounded-full border-2 border-gray-300" src="/static/images/default-avatar.jpg" alt="Default Avatar">
+                            {% endif %}
+                        </button>
+                        <div x-show="isProfileOpen" @click.away="isProfileOpen = false" 
+                             class="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-md py-2 min-w-max"
+                             x-transition:enter="transition ease-out duration-100"
+                             x-transition:enter-start="transform opacity-0 scale-95"
+                             x-transition:enter-end="transform opacity-100 scale-100"
+                             x-transition:leave="transition ease-in duration-75"
+                             x-transition:leave-start="transform opacity-100 scale-100"
+                             x-transition:leave-end="transform opacity-0 scale-95">
+                            {% if user.is_authenticated %}
+                                <a class="block px-4 py-2 text-gray-700 hover:bg-gray-100 font-bold">{{ user_data.username }}</a>
+                                <a href="{% url 'dashboard' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Dashboard</a>
+                                <a href="{% url 'accounts:profile_edit' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Profile</a>
+                                <a href="{% url 'accounts:logout' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Logout</a>
+                            {% else %}
+                                <a href="{% url 'accounts:login' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Login</a>
+                                <a href="{% url 'accounts:register' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Register</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div x-show="isOpen" @click.away="isOpen = false" class="md:hidden">
+                <div class="px-2 pt-2 pb-3 space-y-1">
+                    <a href="{% url 'home_page' %}" class="block text-gray-700 hover:bg-gray-100 px-3 py-2 font-bold">Home</a>
+                    <a href="{% url 'products_page' %}" class="block text-gray-700 hover:bg-gray-100 px-3 py-2 font-bold">Shop</a>
+                    <a href="{% url 'about_page' %}" class="block text-gray-700 hover:bg-gray-100 px-3 py-2 font-bold">About</a>
+                    <a href="{% url 'contact_page' %}" class="block text-gray-700 hover:bg-gray-100 px-3 py-2 font-bold">Contact</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 py-6 pt-20 min-h-[calc(100vh-150px)]">
+        {% block content %}{% endblock %}
+    </main>
+
+    <div class="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-50">
+        <a href="https://api.whatsapp.com/send/?phone=8801738577737&text=Hello!%20I%20need%20help!" 
+           target="_blank"
+           class="bg-green-500 hover:bg-green-600 text-white p-4 md:p-5 rounded-full shadow-lg flex items-center justify-center transition transform hover:scale-110 duration-300 ease-in-out">
+            <svg class="w-6 h-6 md:w-7 md:h-7 fill-current" viewBox="0 0 24 24">
+                <path d="M12 0C5.383 0 0 5.383 0 12c0 2.023.511 4.018 1.484 5.766L0 24l6.531-1.469A11.94 11.94 0 0 0 12 24c6.617 0 12-5.383 12-12S18.617 0 12 0zm5.348 16.118c-.236.666-1.296 1.283-1.815 1.36-.492.07-1.138.1-1.84-.14-.424-.14-1.087-.357-1.998-.826-3.518-1.821-5.819-4.928-6.008-5.152-.173-.214-1.435-1.75-1.435-3.347 0-1.6.894-2.385 1.21-2.717.317-.333.693-.416.924-.416h.707c.23 0 .538-.045.825.63.317.723 1.08 2.507 1.172 2.69.092.184.154.4.03.646-.123.246-.184.4-.369.615-.184.215-.385.48-.553.646-.184.185-.377.385-.162.769.215.385.954 1.577 2.05 2.555 1.41 1.26 2.589 1.652 2.982 1.846.396.193.615.162.846-.092.23-.255.974-1.135 1.23-1.524.256-.385.492-.307.815-.184.324.123 2.076.977 2.435 1.154.359.178.604.26.707.4.092.138.092.717-.143 1.383z"/>
+            </svg>
+        </a>
+    </div>
+
+    <footer class="bg-gray-800 text-white py-12">
+        <div class="container max-w-7xl mx-auto px-6 grid md:grid-cols-4 gap-8">
+            <div class="md:col-span-2">
+                <h4 class="text-lg font-bold mb-4">cn2bn Brand</h4>
+                <p class="text-gray-400">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+            </div>
+            <div>
+                <h4 class="text-lg font-bold mb-4">Quick Links</h4>
+                <ul class="space-y-2 text-gray-400">
+                    <li><a href="#" class="hover:text-white">Privacy Policy</a></li>
+                    <li><a href="#" class="hover:text-white">Terms of Service</a></li>
+                    <li><a href="#" class="hover:text-white">FAQ</a></li>
+                    {% if currency_rate %}
+                        <p class="font-semibold text-gray-400">1 CNY ≈ {{ currency_rate.rate }} BDT</p>
+                    {% else %}
+                        <p class="font-semibold text-red-500">Exchange rate not available.</p>
+                    {% endif %}
+                </ul>
+            </div>
+            <div>
+                <h4 class="text-lg font-bold mb-4">Contact Us</h4>
+                <p class="text-gray-400">support@cn2bn.com</p>
+                <p class="text-gray-400">(+880) 17385-77737</p>
+                <div class="flex space-x-4 mt-4">
+                    <a href="#" class="text-white hover:text-indigo-400">
+                        <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z" />
+                        </svg>
+                    </a>
+                    <a href="#" class="text-white hover:text-indigo-400">
+                        <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z" />
+                        </svg>
+                    </a>
+                    <a href="#" class="text-white hover:text-indigo-400">
+                        <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z" />
+                        </svg>
+                    </a>
+                </div>
+                <a target="_blank" href="https://www.sslcommerz.com/" title="SSLCommerz" alt="SSLCommerz">
+                    <img class="w-full max-w-[300px] h-auto mt-4" src="https://securepay.sslcommerz.com/public/image/SSLCommerz-Pay-With-logo-All-Size-01.png" />
+                </a>
+            </div>
+        </div>
+        <div class="text-center mt-8 pt-8 border-t border-gray-700">
+            <p class="text-gray-400">© <span id="currentYear"></span> cn2bn Brand. All rights reserved.</p>
+        </div>
+    </footer>
+
+    {% block extra_scripts %}{% endblock %}
+
+    <script>
+        const searchButton = document.getElementById('search-button');
+        const searchInput = document.getElementById('search-input');
+
+        searchButton.addEventListener('click', () => {
+            searchInput.classList.toggle('hidden');
+        });
+
+        document.addEventListener('click', (event) => {
+            if (!searchButton.contains(event.target) && !searchInput.contains(event.target)) {
+                searchInput.classList.add('hidden');
+            }
+        });
+
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+    </script>
+</body>
+</html>

@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile Page{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-8 mt-16">
+  <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+    <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
+      <h3 class="text-lg leading-6 font-medium text-gray-900">
+        Profile Information
+      </h3>
+    </div>
+    
+    <form method="POST" enctype="multipart/form-data" class="px-4 py-5 sm:p-6">
+      {% csrf_token %}
+      
+      <div class="grid grid-cols-1 gap-6">
+        <!-- Name -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Full Name</label>
+          {{ form.name }}
+        </div>
+
+        <!-- Mobile Number -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Mobile Number</label>
+          {{ form.mobile_number }}
+        </div>
+
+        <!-- Address -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Address</label>
+          {{ form.address }}
+        </div>
+
+        <!-- Profile Image -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Profile Image</label>
+          <div class="mt-2 flex items-center">
+            <span class="inline-block h-12 w-12 rounded-full overflow-hidden bg-gray-100">
+              {% if user.profile.profile_image %}
+                <img src="{{ user.profile.profile_image.url }}" class="h-full w-full object-cover">
+              {% else %}
+                <svg class="h-full w-full text-gray-300" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112 15c3.183 0 6.078 1.187 8.25 3.13L24 20.993zM16.5 7.5A4.5 4.5 0 1112 3a4.5 4.5 0 014.5 4.5z"/>
+                </svg>
+              {% endif %}
+            </span>
+            <div class="ml-5">
+              {{ form.profile_image }}
+            </div>
+          </div>
+        </div>
+
+        <!-- NID Image -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700">NID Document</label>
+          <div class="mt-2">
+            {{ form.nid_image }}
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-6 flex justify-between items-center">
+          <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            Update Profile
+          </button>
+          <a href="/" class="text-sm font-medium text-gray-700 hover:text-indigo-500">
+            Return to Homepage
+          </a>
+        </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_head %}
+    <!-- Add any page-specific CSS or JavaScript here -->
+{% endblock %}
+
+{% block extra_js %}
+    <!-- Add any page-specific JavaScript here -->
+{% endblock %}

@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Shopping Cart{% endblock %}
+{% block content %}
+
+<div class="container mx-auto p-4 mt-12">
+  {% if cart.items.all %}
+
+    <header class="text-center mb-8">
+      <h1 class="text-3xl font-bold text-gray-800 sm:text-4xl">Your Shopping Cart</h1>
+      <p class="text-gray-600 text-sm sm:text-base mt-6">Manage your cart items and proceed to checkout</p>
+    </header>
+
+    <div class="overflow-x-auto">
+      <table class="min-w-full bg-white border border-gray-200 rounded-lg shadow-lg text-sm sm:text-base">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="py-3 px-4 text-left font-medium text-gray-700 hidden sm:table-cell">Image</th>
+            <th class="py-3 px-4 text-left font-medium text-gray-700">Name</th>
+            <th class="py-3 px-4 text-left font-medium text-gray-700 hidden sm:table-cell">Price</th>
+            <th class="py-3 px-4 text-left font-medium text-gray-700">Size</th>
+            <th class="py-3 px-4 text-left font-medium text-gray-700">Color</th>
+            <th class="py-3 px-4 text-left font-medium text-gray-700">Quantity</th>
+            <th class="py-3 px-4 text-left font-medium text-gray-700">Total</th>
+            <th class="py-3 px-4 text-left font-medium text-gray-700"></th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+          {% for item in cart.items.all %}
+          <tr data-product-id="{{ item.product.id }}" data-price="{{ item.product.price }}">
+            <!-- Image -->
+            <td class="py-4 px-4 hidden sm:table-cell">
+              {% with item.product.images.first as first_image %}
+                {% if first_image %}
+                  <img src="{{ first_image.image.url }}" alt="{{ item.product.name }}" class="w-16 h-16 object-cover rounded-md">
+                {% else %}
+                  <img src="{% static 'default-image.jpg' %}" alt="No Image" class="w-16 h-16 object-cover rounded-md">
+                {% endif %}
+              {% endwith %}
+            </td>
+
+            <!-- Name -->
+            <td class="py-4 px-4 text-gray-800">{{ item.product.name }}</td>
+
+            <!-- Price -->
+            <td class="py-4 px-4 text-gray-800 hidden sm:table-cell">{{ item.product.price }} BDT</td>
+
+            <!-- Size -->
+            <td class="py-4 px-4">
+              {% if item.size %}
+                <p class="px-2 py-1  border-gray-300 rounded-md">{{ item.size }}</p>
+              {% else %}
+              {% comment %} <p class="px-2 py-1 border border-white text-white rounded-md">{{ item.size }}</p> {% endcomment %}
+              <p class="px-2 py-1  text-white ">{{ item.size }}</p>
+              {% endif %}
+            </td>
+
+            <!-- Color -->
+            <td class="py-4 px-4">
+              <div class="flex space-x-2">
+                <p class="w-6 h-6 rounded-full bg-[{{ item.color }}]"></p>
+              </div>
+            </td>
+
+            <!-- Quantity -->
+           <td class="py-4 px-4">
+  <div class="flex items-center space-x-2">
+    <button class="decrease-btn px-2 py-1 bg-gray-200 text-gray-700 rounded-md" data-item-id="{{ item.id }}">-</button>
+    <span class="quantity font-medium text-gray-800">{{ item.quantity }}</span>
+    <button class="increase-btn px-2 py-1 bg-gray-200 text-gray-700 rounded-md" data-item-id="{{ item.id }}">+</button>
+  </div>
+</td>
+
+            <!-- Total -->
+            <td class="py-4 px-4 text-gray-800 total-price">{{ item.total_price }} BDT</td>
+
+            <!-- Remove Button -->
+            <td class="py-4 px-4">
+              <a href="{% url 'remove_from_cart' item.id %}" class="text-xl font-bold text-red-500 hover:text-red-700">x</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Cart Summary -->
+    <section class="mt-8 flex justify-between items-center">
+      <p class="text-lg font-bold text-gray-800 sm:text-xl">
+        Total: <span id="cart-total">{{ cart.total_price }}</span> BDT
+      </p>
+      <a href="{% url 'checkout' %}" class="bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600">Confirm Order</a>
+    </section>
+
+  {% else %}
+    <!-- Empty Cart Message -->
+    <div class="text-center py-10">
+      <h1 class="text-3xl font-bold text-gray-800 sm:text-4xl">Your cart is empty</h1>
+      <p class="text-gray-600 text-sm sm:text-base">Browse our products and add items to your cart.</p>
+      <a href="{% url 'products_page' %}" class="mt-4 inline-block bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600">
+        Continue Shopping
+      </a>
+    </div>
+  {% endif %}
+</div>
+
+<script>
+  // Function to update the cart total
+  function updateCartTotal() {
+    let total = 0;
+    document.querySelectorAll('tr[data-product-id]').forEach(row => {
+      const price = parseFloat(row.getAttribute('data-price'));
+      const quantity = parseInt(row.querySelector('.quantity').textContent);
+      total += price * quantity;
+    });
+    document.getElementById('cart-total').textContent = total;
+  }
+
+  // Function to handle AJAX requests for quantity updates
+  function updateCartItem(itemId, newQuantity) {
+    fetch(`/update-cart-item/${itemId}/`, { // Replace with your actual API endpoint
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': '{{ csrf_token }}', // Include CSRF token for Django
+      },
+      body: JSON.stringify({ quantity: newQuantity }),
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to update cart item');
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log('Cart item updated:', data);
+      })
+      .catch(error => {
+        console.error('Error updating cart item:', error);
+      });
+  }
+
+  // Event listener for quantity buttons
+  document.addEventListener('click', (event) => {
+    if (event.target.classList.contains('increase-btn') || event.target.classList.contains('decrease-btn')) {
+      const button = event.target;
+      const row = button.closest('tr');
+      const itemId = button.getAttribute('data-item-id');
+      const quantityElement = row.querySelector('.quantity');
+      let quantity = parseInt(quantityElement.textContent);
+
+      if (button.classList.contains('increase-btn')) {
+        quantity++;
+      } else if (button.classList.contains('decrease-btn') && quantity > 1) {
+        quantity--;
+      }
+
+      // Update the quantity display
+      quantityElement.textContent = quantity;
+
+      // Update the total price for the row
+      const price = parseFloat(row.getAttribute('data-price'));
+      const totalPriceElement = row.querySelector('.total-price');
+      let totalPrice = Math.round(price * quantity); // Round to avoid floating point issues
+      totalPriceElement.textContent = totalPrice + " BDT";
+
+      // Update the cart total
+      updateCartTotal();
+
+      // Send the updated quantity to the server
+      updateCartItem(itemId, quantity);
+    }
+  });
+
+  // Initialize the cart total on page load
+  window.addEventListener('load', () => {
+    updateCartTotal();
+  });
+</script>
+
+{% endblock %}

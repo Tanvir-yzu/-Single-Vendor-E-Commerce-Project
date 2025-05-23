@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}Email Verification{% endblock %}
+
+{% block content %}
+<h2>Email Verification</h2>
+    <form method="post">
+        {% csrf_token %}
+        <input type="text" name="token" placeholder="Enter verification token" required><br>
+        <button type="submit">Verify</button>
+    </form>
+{% endblock %}
+
+

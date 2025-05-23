@@ -3,6 +3,18 @@
 ## Overview
 CN2BN is a powerful cross-border e-commerce platform designed to connect global buyers and sellers. It simplifies international transactions, offering a seamless shopping and selling experience.
 
+      <iframe 
+            loading="lazy" title="Gumlet video player"
+            src="https://play.gumlet.io/embed/683049b56f0c463e2ef90477"
+            style="border:none; position: absolute; top: 0; left: 0; height: 100%; width: 100%;"
+          allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture; fullscreen;">
+          </iframe>
+
+
+
+[Watch the video](https://play.gumlet.io/embed/683049b56f0c463e2ef90477)
+
+
 ## Prerequisites
 Make sure you have the following installed:
 - Node.js (>= 16.x)
